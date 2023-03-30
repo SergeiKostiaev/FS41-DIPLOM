@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\TicketRequest;
-use App\Models\Seat;
+use App\Services\TicketService;
 use App\Models\Ticket;
 use Illuminate\Http\Response;
 
@@ -16,14 +16,11 @@ class TicketController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(TicketRequest $request)
+    public function store(TicketRequest $request): Response
     {
-        $ticket = Ticket::create($request->validated());
-        foreach ($request->validated()['seats'] as $seatId) {
-            $seat = Seat::findOrFail($seatId);
-            $ticket->seats()->save($seat);
-        }
-        return response($ticket->whereId($ticket->id)->with('session')->with('seats')->first(), 201);
+        $params = $request->validated();
+        $ticket = (new TicketService())->create($params);
+        return response($ticket, 201);
     }
 
     /**
